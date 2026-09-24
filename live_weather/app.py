@@ -35,12 +35,45 @@ def make_error_response(message, status_code=400):
     return jsonify({"success": False, "error": message}), status_code
 
 
+def calculate_beaufort(speed_ms):
+    if speed_ms < 0.5: return {"scale": 0, "label": "Calm"}
+    elif speed_ms < 3.3: return {"scale": 1, "label": "Light Breeze"}
+    elif speed_ms < 5.5: return {"scale": 2, "label": "Gentle Breeze"}
+    elif speed_ms < 8.0: return {"scale": 3, "label": "Moderate Breeze"}
+    elif speed_ms < 10.8: return {"scale": 4, "label": "Fresh Breeze"}
+    elif speed_ms < 13.9: return {"scale": 5, "label": "Strong Breeze"}
+    elif speed_ms < 17.2: return {"scale": 6, "label": "High Wind"}
+    elif speed_ms < 20.7: return {"scale": 7, "label": "Gale"}
+    elif speed_ms < 24.5: return {"scale": 8, "label": "Strong Gale"}
+    elif speed_ms < 28.5: return {"scale": 9, "label": "Storm"}
+    else: return {"scale": 10, "label": "Violent Storm"}
+
+def calculate_uv_index(dt, sunrise, sunset, clouds):
+    if not (sunrise <= dt <= sunset):
+        return {"index": 0, "level": "Low", "color": "#10b981", "advice": "No solar UV protection required at night."}
+    midday = (sunrise + sunset) / 2
+    half_day = max((sunset - sunrise) / 2, 1)
+    time_diff = abs(dt - midday)
+    max_uv = max(0, 9.5 * (1 - (time_diff / half_day) ** 2))
+    cloud_factor = 1 - (clouds / 100) * 0.4
+    estimated_uv = round(max(0.5, max_uv * cloud_factor), 1)
+    if estimated_uv < 3:
+        return {"index": estimated_uv, "level": "Low", "color": "#10b981", "advice": "Low UV risk. Wear sunglasses on bright days."}
+    elif estimated_uv < 6:
+        return {"index": estimated_uv, "level": "Moderate", "color": "#f59e0b", "advice": "Moderate UV. Use SPF 30+ sunscreen and stay in shade."}
+    elif estimated_uv < 8:
+        return {"index": estimated_uv, "level": "High", "color": "#f97316", "advice": "High UV hazard! Wear hat, SPF 30+ sunscreen & sunglasses."}
+    elif estimated_uv < 11:
+        return {"index": estimated_uv, "level": "Very High", "color": "#ef4444", "advice": "Very High UV! Minimize sun exposure between 10 AM - 4 PM."}
+    else:
+        return {"index": estimated_uv, "level": "Extreme", "color": "#a855f7", "advice": "Extreme UV risk! Take all outdoor precautions."}
+
 @app.route('/')
 def index():
     """Render main web application dashboard."""
     return render_template('index.html')
 
-
+@app.route('/api/weather/coordinates', methods=['GET'])
 @app.route('/api/weather', methods=['GET'])
 def get_weather():
     """Fetch current live weather from OpenWeatherMap API by city name or coordinates."""
@@ -81,28 +114,47 @@ def get_weather():
         if city_name:
             add_search_history(city_name, country_code)
 
+        coord = data.get('coord', {})
+        temp = round(data.get('main', {}).get('temp', 0), 1)
+        humidity = data.get('main', {}).get('humidity', 0)
+        wind_speed = round(data.get('wind', {}).get('speed', 0), 1)
+        wind_deg = data.get('wind', {}).get('deg', 0)
+        clouds = data.get('clouds', {}).get('all', 0)
+        sunrise = data.get('sys', {}).get('sunrise', 0)
+        sunset = data.get('sys', {}).get('sunset', 0)
+        dt = data.get('dt', 0)
+
+        dew_point = round(temp - ((100 - humidity) / 5), 1)
+        beaufort = calculate_beaufort(wind_speed)
+        uv_info = calculate_uv_index(dt, sunrise, sunset, clouds)
+
         weather_info = {
             "success": True,
             "city": city_name,
             "country": country_code,
-            "coord": data.get('coord', {}),
-            "temp": round(data.get('main', {}).get('temp', 0), 1),
+            "coord": coord,
+            "lat": coord.get('lat'),
+            "lon": coord.get('lon'),
+            "temp": temp,
             "feels_like": round(data.get('main', {}).get('feels_like', 0), 1),
             "temp_min": round(data.get('main', {}).get('temp_min', 0), 1),
             "temp_max": round(data.get('main', {}).get('temp_max', 0), 1),
             "condition": data['weather'][0]['main'] if data.get('weather') else "Clear",
             "description": data['weather'][0]['description'].title() if data.get('weather') else "",
             "icon": data['weather'][0]['icon'] if data.get('weather') else "01d",
-            "humidity": data.get('main', {}).get('humidity', 0),
-            "wind_speed": round(data.get('wind', {}).get('speed', 0), 1),
-            "wind_deg": data.get('wind', {}).get('deg', 0),
+            "humidity": humidity,
+            "wind_speed": wind_speed,
+            "wind_deg": wind_deg,
+            "beaufort": beaufort,
             "pressure": data.get('main', {}).get('pressure', 0),
             "visibility": round(data.get('visibility', 0) / 1000, 1),  # Convert meters to km
-            "clouds": data.get('clouds', {}).get('all', 0),
-            "sunrise": data.get('sys', {}).get('sunrise', 0),
-            "sunset": data.get('sys', {}).get('sunset', 0),
+            "clouds": clouds,
+            "dew_point": dew_point,
+            "uv": uv_info,
+            "sunrise": sunrise,
+            "sunset": sunset,
             "timezone": data.get('timezone', 0),
-            "dt": data.get('dt', 0)
+            "dt": dt
         }
 
         return jsonify(weather_info)
@@ -314,7 +366,7 @@ def remove_favorite(fav_id):
 if __name__ == '__main__':
     # Run Flask application server
     print("\n=======================================================")
-    print(" ☀️  Live Weather Dashboard is running!")
-    print(" 🚀 Access application at: http://127.0.0.1:5000")
+    print(" Live Weather Dashboard is running!")
+    print(" Access application at: http://127.0.0.1:5000")
     print("=======================================================\n")
     app.run(host='127.0.0.1', port=5000, debug=True)

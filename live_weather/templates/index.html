@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Weather Dashboard | Real-Time Weather Forecast</title>
+    <title>Live Weather Dashboard | Interactive Forecast & Animated Analytics</title>
 
     <!-- Google Fonts: Inter & Montserrat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,485 +13,13 @@
     <!-- FontAwesome 6 Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Custom CSS -->
+    <!-- Custom Premium Stylesheet -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='static/style.css') }}">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #0f172a, #1e3a5f, #0f172a);
-            color: #ffffff;
-            padding: 20px;
-        }
-
-        .app-container {
-            max-width: 1400px;
-            margin: auto;
-        }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-        }
-
-        .app-header {
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .header-brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .brand-logo {
-            width: 55px;
-            height: 55px;
-            display: grid;
-            place-items: center;
-            border-radius: 15px;
-            background: linear-gradient(135deg, #38bdf8, #2563eb);
-            font-size: 25px;
-        }
-
-        .brand-text h1 {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 25px;
-        }
-
-        .brand-subtitle {
-            color: #94a3b8;
-            font-size: 13px;
-        }
-
-        .search-box {
-            display: flex;
-            gap: 10px;
-            flex: 1;
-            max-width: 550px;
-        }
-
-        .search-input-wrapper {
-            position: relative;
-            flex: 1;
-        }
-
-        .search-input-wrapper input {
-            width: 100%;
-            padding: 14px 45px;
-            border: none;
-            outline: none;
-            border-radius: 12px;
-            background: rgba(255,255,255,.12);
-            color: white;
-            font-size: 14px;
-        }
-
-        .search-input-wrapper input::placeholder {
-            color: #94a3b8;
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #38bdf8;
-        }
-
-        .btn {
-            border: none;
-            cursor: pointer;
-            padding: 13px 18px;
-            border-radius: 12px;
-            font-weight: 600;
-            transition: .3s;
-        }
-
-        .btn-primary {
-            background: #2563eb;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #1d4ed8;
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: rgba(255,255,255,.1);
-            color: white;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .unit-toggle {
-            display: flex;
-            background: rgba(255,255,255,.1);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .unit-btn {
-            border: none;
-            background: transparent;
-            color: white;
-            padding: 10px 13px;
-            cursor: pointer;
-        }
-
-        .unit-btn.active {
-            background: #2563eb;
-        }
-
-        .theme-toggle-btn {
-            width: 42px;
-            height: 42px;
-            border: none;
-            border-radius: 10px;
-            background: rgba(255,255,255,.1);
-            color: white;
-            cursor: pointer;
-        }
-
-        .light-icon {
-            display: none;
-        }
-
-        .quick-access-bar {
-            margin-top: 20px;
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            gap: 25px;
-            flex-wrap: wrap;
-        }
-
-        .quick-section {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .quick-title {
-            font-weight: 600;
-        }
-
-        .chip-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .chip {
-            padding: 7px 12px;
-            border-radius: 20px;
-            background: rgba(56,189,248,.15);
-            color: #7dd3fc;
-            cursor: pointer;
-        }
-
-        .quick-divider {
-            height: 30px;
-            width: 1px;
-            background: rgba(255,255,255,.2);
-        }
-
-        .refresh-status-bar {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px 5px;
-            color: #94a3b8;
-            font-size: 13px;
-        }
-
-        .hero-weather-card {
-            padding: 30px;
-        }
-
-        .hero-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 30px;
-        }
-
-        .city-name-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .city-name-wrapper h2 {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 40px;
-        }
-
-        .country-badge {
-            background: #2563eb;
-            padding: 5px 9px;
-            border-radius: 7px;
-            font-size: 12px;
-        }
-
-        .fav-star-btn {
-            border: none;
-            background: transparent;
-            color: #facc15;
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        .live-date,
-        .live-clock {
-            color: #94a3b8;
-            margin-top: 8px;
-        }
-
-        .hero-temp-box {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .hero-weather-icon-wrapper img {
-            width: 120px;
-        }
-
-        .main-temperature {
-            font-size: 65px;
-            font-weight: 700;
-        }
-
-        .unit-symbol {
-            font-size: 25px;
-            color: #94a3b8;
-        }
-
-        .condition-badge {
-            color: #7dd3fc;
-            font-weight: 600;
-        }
-
-        .hero-footer-bar {
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255,255,255,.12);
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-        }
-
-        .hero-sub-stat {
-            color: #cbd5e1;
-        }
-
-        .dashboard-section {
-            margin-top: 25px;
-        }
-
-        .section-title {
-            margin-bottom: 15px;
-            font-size: 20px;
-        }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 18px;
-        }
-
-        .metric-card {
-            padding: 20px;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            transition: .3s;
-        }
-
-        .metric-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .metric-icon-box {
-            width: 50px;
-            height: 50px;
-            display: grid;
-            place-items: center;
-            border-radius: 13px;
-            font-size: 20px;
-        }
-
-        .metric-icon-box.blue { background: rgba(59,130,246,.2); color: #60a5fa; }
-        .metric-icon-box.green { background: rgba(34,197,94,.2); color: #4ade80; }
-        .metric-icon-box.purple { background: rgba(168,85,247,.2); color: #c084fc; }
-        .metric-icon-box.orange { background: rgba(249,115,22,.2); color: #fb923c; }
-        .metric-icon-box.sky { background: rgba(14,165,233,.2); color: #38bdf8; }
-        .metric-icon-box.yellow { background: rgba(234,179,8,.2); color: #facc15; }
-
-        .metric-label,
-        .metric-desc {
-            display: block;
-            color: #94a3b8;
-            font-size: 13px;
-        }
-
-        .metric-value {
-            font-size: 24px;
-            font-weight: 700;
-            margin: 5px 0;
-        }
-
-        .dashboard-row {
-            display: grid;
-            grid-template-columns: 1.5fr 1fr;
-            gap: 20px;
-        }
-
-        .hourly-section,
-        .aqi-section {
-            padding: 20px;
-        }
-
-        .hourly-slider {
-            display: flex;
-            gap: 12px;
-            overflow-x: auto;
-            padding-bottom: 10px;
-        }
-
-        .hourly-item {
-            min-width: 100px;
-            padding: 15px;
-            text-align: center;
-            background: rgba(255,255,255,.06);
-            border-radius: 15px;
-        }
-
-        .pollutants-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .pollutant-item {
-            padding: 12px;
-            background: rgba(255,255,255,.06);
-            border-radius: 10px;
-        }
-
-        .pollutant-name,
-        .pollutant-unit {
-            display: block;
-            color: #94a3b8;
-            font-size: 12px;
-        }
-
-        .pollutant-val {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .daily-forecast-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 15px;
-        }
-
-        .daily-card {
-            padding: 20px;
-            text-align: center;
-            background: rgba(255,255,255,.07);
-            border-radius: 16px;
-        }
-
-        .app-footer {
-            margin-top: 25px;
-            padding: 20px;
-            text-align: center;
-            color: #94a3b8;
-        }
-
-        /* Responsive */
-        @media (max-width: 1000px) {
-            .dashboard-row {
-                grid-template-columns: 1fr;
-            }
-
-            .metrics-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .daily-forecast-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        @media (max-width: 650px) {
-            body {
-                padding: 10px;
-            }
-
-            .hero-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .hero-footer-bar {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .metrics-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .daily-forecast-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .search-box {
-                order: 3;
-                width: 100%;
-            }
-
-            .header-actions {
-                width: 100%;
-                justify-content: space-between;
-            }
-
-            .city-name-wrapper h2 {
-                font-size: 30px;
-            }
-
-            .main-temperature {
-                font-size: 50px;
-            }
-        }
-    </style>
 </head>
-<body class="weather-bg-clear">
+<body>
+
+    <!-- DYNAMIC LIVE WEATHER PARTICLE CANVAS ANIMATION OVERLAY -->
+    <canvas id="weather-canvas"></canvas>
 
     <div class="app-container">
         <!-- HEADER / NAVIGATION -->
@@ -502,18 +30,23 @@
                 </div>
                 <div class="brand-text">
                     <h1>Live Weather</h1>
-                    <span class="brand-subtitle">Real-Time Forecast</span>
+                    <span class="brand-subtitle">
+                        <span class="live-pulse-dot"></span> Real-Time Forecast & Analytics
+                    </span>
                 </div>
             </div>
 
-            <!-- SEARCH FORM -->
+            <!-- SEARCH FORM WITH AUTO-SUGGEST DROPDOWN -->
             <form id="search-form" class="search-box">
                 <div class="search-input-wrapper">
                     <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" id="city-input" placeholder="Search city (e.g. Mumbai, London, Tokyo)..." autocomplete="off" required>
+                    <input type="text" id="city-input" placeholder="Search city (e.g. Mumbai, London, Tokyo, New York)..." autocomplete="off" required>
                     <button type="button" id="clear-search-btn" class="clear-btn" title="Clear input" style="display: none;">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
+
+                    <!-- Auto-Suggest Dropdown -->
+                    <div id="suggest-dropdown" class="suggest-dropdown"></div>
                 </div>
                 <button type="submit" class="btn btn-primary search-btn">
                     <span>Search</span>
@@ -521,11 +54,15 @@
                 </button>
             </form>
 
-            <!-- HEADER ACTIONS (Location, Unit Toggle, Theme Toggle) -->
+            <!-- HEADER ACTIONS (Location, Sound, Unit Toggle, Theme Toggle) -->
             <div class="header-actions">
-                <button id="location-btn" class="btn btn-secondary location-btn" title="Use My Location">
+                <button id="location-btn" class="btn btn-secondary location-btn" title="Use My Current Geolocation">
                     <i class="fa-solid fa-location-crosshairs"></i>
-                    <span class="btn-label">Use My Location</span>
+                    <span class="btn-label">My Location</span>
+                </button>
+
+                <button id="ambient-sound-btn" class="icon-btn" title="Toggle Ambient Weather Audio Sound Synth">
+                    <i class="fa-solid fa-volume-high"></i>
                 </button>
 
                 <div class="unit-toggle" title="Toggle Temperature Unit">
@@ -533,23 +70,25 @@
                     <button id="unit-f" class="unit-btn" data-unit="F">°F</button>
                 </div>
 
-                <button id="theme-toggle-btn" class="theme-toggle-btn" title="Toggle Light/Dark Theme">
+                <button id="theme-toggle-btn" class="icon-btn" title="Toggle Light/Dark Theme">
                     <i class="fa-solid fa-moon dark-icon"></i>
-                    <i class="fa-solid fa-sun light-icon"></i>
                 </button>
             </div>
         </header>
 
-        <!-- RECENT & FAVORITES QUICK BAR -->
+        <!-- QUICK ACCESS BAR (World Cities, Recent Searches, Favorites) -->
         <div class="quick-access-bar glass-card">
-            <div class="quick-section">
+            <div class="quick-bar-row">
+                <span class="quick-title"><i class="fa-solid fa-earth-americas"></i> Major Cities:</span>
+                <div id="world-cities-container" class="chip-group"></div>
+            </div>
+            <div class="quick-bar-row">
                 <span class="quick-title"><i class="fa-solid fa-clock-rotate-left"></i> Recent:</span>
                 <div id="recent-searches-container" class="chip-group">
                     <span class="chip-placeholder">No recent searches</span>
                 </div>
             </div>
-            <div class="quick-divider"></div>
-            <div class="quick-section">
+            <div class="quick-bar-row">
                 <span class="quick-title"><i class="fa-solid fa-star text-gold"></i> Favorites:</span>
                 <div id="favorites-container" class="chip-group">
                     <span class="chip-placeholder">No favorites saved yet</span>
@@ -559,30 +98,27 @@
 
         <!-- ERROR ALERT BANNER -->
         <div id="error-banner" class="error-banner glass-card" style="display: none;">
-            <i class="fa-solid fa-circle-exclamation error-icon"></i>
-            <span id="error-message">An error occurred while fetching weather data.</span>
-            <button id="close-error-btn" class="close-error-btn"><i class="fa-solid fa-xmark"></i></button>
+            <div class="error-content" style="display:flex; align-items:center; gap:10px;">
+                <i class="fa-solid fa-circle-exclamation error-icon" style="font-size:20px; color:#ef4444;"></i>
+                <span id="error-message">An error occurred while fetching weather data.</span>
+            </div>
+            <button id="close-error-btn" class="icon-btn" style="width:32px; height:32px; border:none; background:transparent;"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
         <!-- REFRESH STATUS BAR -->
         <div class="refresh-status-bar">
-            <span id="last-updated-text"><i class="fa-solid fa-arrows-rotate"></i> Initializing weather...</span>
+            <span id="last-updated-text"><i class="fa-solid fa-arrows-rotate"></i> Initializing live weather dashboard...</span>
             <span id="refresh-spinner" class="spinner" style="display: none;"></span>
         </div>
 
         <!-- SKELETON LOADER -->
         <div id="skeleton-loader" class="skeleton-wrapper" style="display: none;">
-            <div class="skeleton-hero glass-card"></div>
-            <div class="skeleton-grid">
-                <div class="skeleton-card glass-card"></div>
-                <div class="skeleton-card glass-card"></div>
-                <div class="skeleton-card glass-card"></div>
-                <div class="skeleton-card glass-card"></div>
-            </div>
+            <div class="skeleton-hero glass-card" style="height: 240px; margin-bottom: 20px;"></div>
         </div>
 
         <!-- MAIN DASHBOARD CONTENT -->
         <main id="weather-dashboard" class="weather-dashboard">
+
             <!-- HERO WEATHER CARD -->
             <section class="hero-weather-card glass-card">
                 <div class="hero-header">
@@ -590,24 +126,24 @@
                         <div class="city-name-wrapper">
                             <h2 id="city-name">Mumbai</h2>
                             <span id="country-badge" class="country-badge">IN</span>
-                            <button id="fav-toggle-btn" class="fav-star-btn" title="Add to Favorites">
+                            <button id="fav-toggle-btn" class="fav-star-btn" title="Add / Remove Favorites">
                                 <i class="fa-regular fa-star"></i>
                             </button>
                         </div>
-                        <p id="live-date" class="live-date">Tuesday, September 9, 2026</p>
+                        <p id="live-date" class="live-date">Loading date...</p>
                         <p id="live-clock" class="live-clock"><i class="fa-regular fa-clock"></i> --:--:-- PM</p>
                     </div>
 
                     <div class="hero-temp-box">
-                        <div class="hero-weather-icon-wrapper">
-                            <img id="weather-icon" src="https://openweathermap.org/img/wn/02d@4x.png" alt="Weather condition icon">
+                        <div class="hero-icon-container">
+                            <img id="weather-icon" class="hero-weather-icon" src="https://openweathermap.org/img/wn/02d@4x.png" alt="Weather condition icon">
                         </div>
                         <div class="temp-display-group">
                             <div class="main-temperature">
-                                <span id="current-temp">28</span><span class="unit-symbol">°C</span>
+                                <span id="current-temp">--</span><span class="unit-symbol">°</span>
                             </div>
                             <div class="condition-badge">
-                                <span id="weather-condition">Partly Cloudy</span>
+                                <span id="weather-condition">Loading...</span>
                             </div>
                         </div>
                     </div>
@@ -616,26 +152,26 @@
                 <div class="hero-footer-bar">
                     <div class="hero-sub-stat">
                         <i class="fa-solid fa-temperature-half"></i>
-                        <span>Feels like: <strong id="feels-like-temp">31°C</strong></span>
+                        <span>Feels like: <strong id="feels-like-temp">--</strong></span>
                     </div>
                     <div class="hero-sub-stat">
                         <i class="fa-solid fa-temperature-arrow-up"></i>
-                        <span>High: <strong id="temp-max">30°C</strong></span>
+                        <span>High: <strong id="temp-max">--</strong></span>
                     </div>
                     <div class="hero-sub-stat">
                         <i class="fa-solid fa-temperature-arrow-down"></i>
-                        <span>Low: <strong id="temp-min">25°C</strong></span>
+                        <span>Low: <strong id="temp-min">--</strong></span>
                     </div>
                     <div class="hero-sub-stat">
                         <i class="fa-solid fa-cloud"></i>
-                        <span id="weather-description">Scattered Clouds</span>
+                        <span id="weather-description">--</span>
                     </div>
                 </div>
             </section>
 
             <!-- WEATHER METRICS DETAILS GRID -->
             <section class="dashboard-section">
-                <h3 class="section-title"><i class="fa-solid fa-chart-simple"></i> Weather Details</h3>
+                <h3 class="section-title"><i class="fa-solid fa-chart-simple"></i> Weather Conditions & Metrics</h3>
                 <div class="metrics-grid">
 
                     <div class="metric-card glass-card">
@@ -644,7 +180,7 @@
                         </div>
                         <div class="metric-info">
                             <span class="metric-label">Humidity</span>
-                            <div class="metric-value"><span id="humidity-value">78</span>%</div>
+                            <div class="metric-value"><span id="humidity-value">--</span></div>
                             <span class="metric-desc" id="humidity-desc">Normal humidity</span>
                         </div>
                     </div>
@@ -655,8 +191,8 @@
                         </div>
                         <div class="metric-info">
                             <span class="metric-label">Wind Speed</span>
-                            <div class="metric-value"><span id="wind-value">4.5</span> <small id="wind-unit">m/s</small></div>
-                            <span class="metric-desc" id="wind-dir-desc">Direction: 180° (S)</span>
+                            <div class="metric-value"><span id="wind-value">--</span> <small id="wind-unit">m/s</small></div>
+                            <span class="metric-desc" id="wind-dir-desc">Direction</span>
                         </div>
                     </div>
 
@@ -666,8 +202,8 @@
                         </div>
                         <div class="metric-info">
                             <span class="metric-label">Atmospheric Pressure</span>
-                            <div class="metric-value"><span id="pressure-value">1008</span> <small>hPa</small></div>
-                            <span class="metric-desc">Standard pressure</span>
+                            <div class="metric-value"><span id="pressure-value">--</span></div>
+                            <span class="metric-desc">Standard sea level pressure</span>
                         </div>
                     </div>
 
@@ -677,7 +213,7 @@
                         </div>
                         <div class="metric-info">
                             <span class="metric-label">Visibility</span>
-                            <div class="metric-value"><span id="visibility-value">8.0</span> <small>km</small></div>
+                            <div class="metric-value"><span id="visibility-value">--</span> <small>km</small></div>
                             <span class="metric-desc" id="visibility-desc">Clear visibility</span>
                         </div>
                     </div>
@@ -688,8 +224,19 @@
                         </div>
                         <div class="metric-info">
                             <span class="metric-label">Cloud Coverage</span>
-                            <div class="metric-value"><span id="clouds-value">40</span>%</div>
-                            <span class="metric-desc">Partly cloudy</span>
+                            <div class="metric-value"><span id="clouds-value">--</span></div>
+                            <span class="metric-desc">Cloud sky percentage</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card glass-card">
+                        <div class="metric-icon-box teal">
+                            <i class="fa-solid fa-temperature-low"></i>
+                        </div>
+                        <div class="metric-info">
+                            <span class="metric-label">Dew Point</span>
+                            <div class="metric-value"><span id="dew-point-value">--</span></div>
+                            <span class="metric-desc">Moisture condensation temp</span>
                         </div>
                     </div>
 
@@ -700,8 +247,8 @@
                         <div class="metric-info">
                             <span class="metric-label">Sunrise & Sunset</span>
                             <div class="sun-times-row">
-                                <div><i class="fa-solid fa-sun-up text-amber"></i> <span id="sunrise-time">06:20 AM</span></div>
-                                <div><i class="fa-solid fa-sun-down text-orange"></i> <span id="sunset-time">06:45 PM</span></div>
+                                <div><i class="fa-solid fa-sun-up" style="color:#f59e0b;"></i> <span id="sunrise-time">--:--</span></div>
+                                <div><i class="fa-solid fa-sun-down" style="color:#f97316;"></i> <span id="sunset-time">--:--</span></div>
                             </div>
                         </div>
                     </div>
@@ -709,92 +256,134 @@
                 </div>
             </section>
 
-            <!-- HOURLY FORECAST & AIR QUALITY TWO-COLUMN ROW -->
-            <div class="dashboard-row">
-                <!-- HOURLY FORECAST -->
-                <section class="dashboard-section hourly-section glass-card">
-                    <div class="section-header-flex">
-                        <h3 class="section-title"><i class="fa-regular fa-clock"></i> 24-Hour Hourly Forecast</h3>
-                        <span class="scroll-hint"><i class="fa-solid fa-arrow-right-long"></i> Scroll</span>
-                    </div>
-                    <div id="hourly-forecast-container" class="hourly-slider">
-                        <!-- Hourly forecast items populated by JS -->
-                    </div>
-                </section>
+            <!-- 24-HOUR FORECAST CHART & HOURLY SLIDER -->
+            <section class="dashboard-section hourly-section glass-card">
+                <div class="chart-header-flex">
+                    <h3 class="section-title"><i class="fa-regular fa-clock"></i> 24-Hour Temperature Trend Curve & Forecast</h3>
+                    <span class="brand-subtitle"><i class="fa-solid fa-arrow-right-long"></i> Scroll cards</span>
+                </div>
 
-                <!-- AIR QUALITY INDEX -->
-                <section class="dashboard-section aqi-section glass-card">
-                    <h3 class="section-title"><i class="fa-solid fa-wind text-teal"></i> Air Quality Index</h3>
-                    <div class="aqi-main-display">
-                        <div class="aqi-gauge-box">
-                            <div id="aqi-level-badge" class="aqi-badge level-good">Good</div>
-                            <div class="aqi-number-group">
-                                <span id="aqi-value">1</span>
-                                <span class="aqi-max">/ 5</span>
-                            </div>
+                <!-- SVG Temperature Wave Chart -->
+                <div class="chart-container-wrapper">
+                    <svg id="hourly-chart-svg" viewBox="0 0 600 180" preserveAspectRatio="none"></svg>
+                </div>
+
+                <!-- Hourly Cards Slider -->
+                <div id="hourly-forecast-container" class="hourly-slider"></div>
+            </section>
+
+            <!-- TWO-COLUMN ROW: WIND COMPASS, UV INDEX, AQI & ACTIVITIES -->
+            <div class="dashboard-grid-2col">
+
+                <!-- WIND COMPASS DIAL & UV INDEX -->
+                <div style="display:flex; flex-direction:column; gap:24px;">
+                    <!-- Wind Compass Dial Card -->
+                    <section class="compass-card glass-card">
+                        <h3 class="section-title" style="margin-bottom:0;"><i class="fa-solid fa-compass"></i> Wind Compass & Dial</h3>
+                        <div class="compass-container">
+                            <span class="compass-cardinal n">N</span>
+                            <span class="compass-cardinal s">S</span>
+                            <span class="compass-cardinal e">E</span>
+                            <span class="compass-cardinal w">W</span>
+                            <div id="compass-needle" class="compass-needle"></div>
                         </div>
-                        <div class="aqi-bar-container">
+                        <div style="margin-top:8px;">
+                            <strong id="wind-degrees-val" style="font-size:18px;">--° N</strong>
+                            <p id="beaufort-label" class="metric-desc" style="margin-top:2px;">Moderate Breeze</p>
+                        </div>
+                    </section>
+
+                    <!-- UV Index Gauge Card -->
+                    <section class="aqi-section glass-card">
+                        <h3 class="section-title"><i class="fa-solid fa-sun text-yellow"></i> Solar UV Index Rating</h3>
+                        <div class="aqi-main-display">
+                            <div class="aqi-header-row">
+                                <div id="uv-badge" class="aqi-badge" style="background-color:#10b981;">Low</div>
+                                <div class="aqi-number-group">
+                                    <span id="uv-index-val">0</span>
+                                    <span class="aqi-max">/ 11</span>
+                                </div>
+                            </div>
+                            <div class="aqi-progress-track">
+                                <div id="uv-progress-bar" class="aqi-progress-fill" style="width: 10%;"></div>
+                            </div>
+                            <p id="uv-advice-text" class="metric-desc" style="margin-top:4px;">No protection needed.</p>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- AIR QUALITY INDEX & OUTDOOR ACTIVITIES -->
+                <div style="display:flex; flex-direction:column; gap:24px;">
+                    <!-- Air Quality Card -->
+                    <section class="aqi-section glass-card">
+                        <h3 class="section-title"><i class="fa-solid fa-wind" style="color:#2dd4bf;"></i> Air Quality Index (AQI)</h3>
+                        <div class="aqi-main-display">
+                            <div class="aqi-header-row">
+                                <div id="aqi-level-badge" class="aqi-badge" style="background-color:#10b981;">Good</div>
+                                <div class="aqi-number-group">
+                                    <span id="aqi-value">1</span>
+                                    <span class="aqi-max">/ 5</span>
+                                </div>
+                            </div>
                             <div class="aqi-progress-track">
                                 <div id="aqi-progress-bar" class="aqi-progress-fill" style="width: 20%;"></div>
                             </div>
-                            <div class="aqi-scale-labels">
-                                <span>Good</span>
-                                <span>Fair</span>
-                                <span>Mod</span>
-                                <span>Poor</span>
-                                <span>V.Poor</span>
+                        </div>
+
+                        <div class="pollutants-grid">
+                            <div class="pollutant-item">
+                                <span class="pollutant-name">PM2.5</span>
+                                <span id="pm25-val" class="pollutant-val">--</span>
+                                <span class="pollutant-unit">µg/m³</span>
+                            </div>
+                            <div class="pollutant-item">
+                                <span class="pollutant-name">PM10</span>
+                                <span id="pm10-val" class="pollutant-val">--</span>
+                                <span class="pollutant-unit">µg/m³</span>
+                            </div>
+                            <div class="pollutant-item">
+                                <span class="pollutant-name">CO</span>
+                                <span id="co-val" class="pollutant-val">--</span>
+                                <span class="pollutant-unit">µg/m³</span>
+                            </div>
+                            <div class="pollutant-item">
+                                <span class="pollutant-name">NO2</span>
+                                <span id="no2-val" class="pollutant-val">--</span>
+                                <span class="pollutant-unit">µg/m³</span>
+                            </div>
+                            <div class="pollutant-item">
+                                <span class="pollutant-name">SO2</span>
+                                <span id="so2-val" class="pollutant-val">--</span>
+                                <span class="pollutant-unit">µg/m³</span>
+                            </div>
+                            <div class="pollutant-item">
+                                <span class="pollutant-name">O3</span>
+                                <span id="o3-val" class="pollutant-val">--</span>
+                                <span class="pollutant-unit">µg/m³</span>
                             </div>
                         </div>
-                    </div>
+                    </section>
 
-                    <!-- POLLUTANT PARTICLES GRID -->
-                    <div class="pollutants-grid">
-                        <div class="pollutant-item">
-                            <span class="pollutant-name">PM2.5</span>
-                            <span id="pm25-val" class="pollutant-val">12.4</span>
-                            <span class="pollutant-unit">µg/m³</span>
-                        </div>
-                        <div class="pollutant-item">
-                            <span class="pollutant-name">PM10</span>
-                            <span id="pm10-val" class="pollutant-val">24.1</span>
-                            <span class="pollutant-unit">µg/m³</span>
-                        </div>
-                        <div class="pollutant-item">
-                            <span class="pollutant-name">CO</span>
-                            <span id="co-val" class="pollutant-val">210.5</span>
-                            <span class="pollutant-unit">µg/m³</span>
-                        </div>
-                        <div class="pollutant-item">
-                            <span class="pollutant-name">NO2</span>
-                            <span id="no2-val" class="pollutant-val">15.2</span>
-                            <span class="pollutant-unit">µg/m³</span>
-                        </div>
-                        <div class="pollutant-item">
-                            <span class="pollutant-name">SO2</span>
-                            <span id="so2-val" class="pollutant-val">4.8</span>
-                            <span class="pollutant-unit">µg/m³</span>
-                        </div>
-                        <div class="pollutant-item">
-                            <span class="pollutant-name">O3</span>
-                            <span id="o3-val" class="pollutant-val">38.0</span>
-                            <span class="pollutant-unit">µg/m³</span>
-                        </div>
-                    </div>
-                </section>
+                    <!-- Outdoor Activities & Outfit Advice -->
+                    <section class="aqi-section glass-card">
+                        <h3 class="section-title"><i class="fa-solid fa-shirt" style="color:#c084fc;"></i> Outdoor Activities & Outfit Advice</h3>
+                        <div id="activities-container" class="activities-grid"></div>
+                    </section>
+                </div>
+
             </div>
 
             <!-- 5-DAY DAILY FORECAST SECTION -->
-            <section class="dashboard-section glass-card">
-                <h3 class="section-title"><i class="fa-regular fa-calendar-days"></i> 5-Day Daily Forecast</h3>
-                <div id="daily-forecast-container" class="daily-forecast-grid">
-                    <!-- Daily forecast cards populated by JS -->
-                </div>
+            <section class="dashboard-section glass-card" style="padding: 24px;">
+                <h3 class="section-title"><i class="fa-regular fa-calendar-days"></i> 5-Day Daily Weather Forecast</h3>
+                <div id="daily-forecast-container" class="daily-forecast-grid"></div>
             </section>
+
         </main>
 
         <!-- FOOTER -->
         <footer class="app-footer glass-card">
-            <p>Live Weather Dashboard &copy; 2026 | Powered by OpenWeatherMap API & Flask</p>
+            <p>Live Weather Dashboard &copy; 2026 | Enhanced with Real-Time Canvas Animations, Solar UV Gauge & Sound Synthesizer</p>
         </footer>
     </div>
 
