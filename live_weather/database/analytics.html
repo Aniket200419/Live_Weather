@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Insights & Global Analytics | Live Weather</title>
+
+    <!-- Google Fonts: Inter & Montserrat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom Premium Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <style>
+        .nav-links {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .nav-link-btn {
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 14px;
+            transition: all var(--transition-fast);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--card-border);
+        }
+        .nav-link-btn:hover, .nav-link-btn.active {
+            color: var(--accent-blue);
+            background: rgba(56, 189, 248, 0.15);
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        .compare-table-wrapper {
+            overflow-x: auto;
+            margin-top: 16px;
+        }
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+        .compare-table th, .compare-table td {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--card-border);
+        }
+        .compare-table th {
+            color: var(--text-muted);
+            font-weight: 600;
+            background: rgba(15, 23, 42, 0.4);
+        }
+        .compare-table td {
+            color: var(--text-main);
+        }
+        .guide-card {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .guide-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 12px 14px;
+            background: rgba(15, 23, 42, 0.3);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--card-border);
+        }
+        .guide-badge {
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- DYNAMIC CANVAS -->
+    <canvas id="weather-canvas"></canvas>
+
+    <div class="app-container">
+        <!-- HEADER / NAVIGATION -->
+        <header class="app-header glass-card">
+            <div class="header-brand">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>Weather Analytics</h1>
+                    <span class="brand-subtitle">
+                        <span class="live-pulse-dot"></span> Comparative Metrics & Insights
+                    </span>
+                </div>
+            </div>
+
+            <!-- NAVIGATION LINKS -->
+            <div class="nav-links">
+                <a href="/" class="nav-link-btn">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/analytics" class="nav-link-btn active">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Analytics</span>
+                </a>
+            </div>
+
+            <!-- HEADER ACTIONS -->
+            <div class="header-actions">
+                <button id="theme-toggle-btn" class="icon-btn" title="Toggle Light/Dark Theme">
+                    <i class="fa-solid fa-moon dark-icon"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- GLOBAL CITY COMPARISON MATRIX -->
+        <section class="dashboard-section glass-card" style="padding: 24px;">
+            <div class="chart-header-flex">
+                <h3 class="section-title"><i class="fa-solid fa-globe"></i> Global City Comparison Matrix</h3>
+                <span class="brand-subtitle"><i class="fa-solid fa-arrows-rotate"></i> Real-Time Multi-City Weather</span>
+            </div>
+
+            <div class="compare-table-wrapper">
+                <table class="compare-table">
+                    <thead>
+                        <tr>
+                            <th>City</th>
+                            <th>Temperature</th>
+                            <th>Condition</th>
+                            <th>Humidity</th>
+                            <th>Wind Speed</th>
+                            <th>Pressure</th>
+                        </tr>
+                    </thead>
+                    <tbody id="compare-table-body">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">
+                                <i class="fa-solid fa-spinner fa-spin"></i> Fetching comparative city weather data...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- TWO-COLUMN METRICS GUIDE -->
+        <div class="analytics-grid">
+            <!-- AIR QUALITY INDEX GUIDE -->
+            <div class="guide-card glass-card">
+                <h3 class="section-title"><i class="fa-solid fa-wind" style="color: #2dd4bf;"></i> Air Quality Index (AQI) Guide</h3>
+                
+                <div class="guide-item">
+                    <span class="guide-badge" style="background: #10b981; color: #fff;">AQI 1 - Good</span>
+                    <div>
+                        <strong style="color: var(--text-main); font-size: 14px;">Ideal Air Quality</strong>
+                        <p style="color: var(--text-muted); font-size: 13px; margin-top: 2px;">Air quality is satisfactory, and air pollution poses little or no risk.</p>
+                    </div>
+                </div>
+
+                <div class="guide-item">
+                    <span class="guide-badge" style="background: #84cc16; color: #fff;">AQI 2 - Fair</span>
+                    <div>
+                        <strong style="color: var(--text-main); font-size: 14px;">Moderate Concern</strong>
+                        <p style="color: var(--text-muted); font-size: 13px; margin-top: 2px;">Acceptable quality. Sensitive individuals should take minor precautions.</p>
+                    </div>
+                </div>
+
+                <div class="guide-item">
+                    <span class="guide-badge" style="background: #f59e0b; color: #fff;">AQI 3 - Moderate</span>
+                    <div>
+                        <strong style="color: var(--text-main); font-size: 14px;">Unhealthy for Sensitive Groups</strong>
+                        <p style="color: var(--text-muted); font-size: 13px; margin-top: 2px;">Members of sensitive groups may experience health effects.</p>
+                    </div>
+                </div>
+
+                <div class="guide-item">
+                    <span class="guide-badge" style="background: #ef4444; color: #fff;">AQI 4 - Poor</span>
+                    <div>
+                        <strong style="color: var(--text-main); font-size: 14px;">Unhealthy</strong>
+                        <p style="color: var(--text-muted); font-size: 13px; margin-top: 2px;">Everyone may begin to experience health effects; limit prolonged outdoor exposure.</p>
+                    </div>
+                </div>
+
+                <div class="guide-item">
+                    <span class="guide-badge" style="background: #991b1b; color: #fff;">AQI 5 - Hazardous</span>
+                    <div>
+                        <strong style="color: var(--text-main); font-size: 14px;">Emergency Hazard</strong>
+                        <p style="color: var(--text-muted); font-size: 13px; margin-top: 2px;">Health warning of emergency conditions. Stay indoors with air purification.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UV INDEX SAFETY GUIDE -->
+            <div class="guide-card glass-card">
+                <h3 class="section-title"><i class="fa-solid fa-sun" style="color: #facc15;"></i> Solar UV Protection Scale</h3>
+                
+                <div class="guide-item">
+                    <span class="guide-badge" style="background: #10b981; color: #fff;">UV 0 - 2 (Low)</span>
+                    <div>
+                        <strong style="color: var(--text-main); font-size: 14px;">Minimal Solar Hazard</strong>
+                        <p style="color: var(--text-muted); font-size: 13px; margin-top: 2px;">No protection required. Enjoy outdoors safely.</p>
+                    </div>
+                </div>
+
+                <div class="guide-item">
+                    <span class="guide-badge" style="background: #f59e0b; color: #fff;">UV 3 - 5 (Moderate)</span>
+                    <div>
+                        <strong style="color: var(--text-main); font-size: 14px;">Moderate Protection Needed</strong>
+                        <p style="color: var(--text-muted); font-size: 13px; margin-top: 2px;">Wear SPF 30+ sunscreen, hat, and seek shade during midday peak.</p>
+                    </div>
+                </div>
+
+                <div class="guide-item">
+                    <span class="guide-badge" style="background: #f97316; color: #fff;">UV 6 - 7 (High)</span>
+                    <div>
+                        <strong style="color: var(--text-main); font-size: 14px;">High Solar Protection Needed</strong>
+                        <p style="color: var(--text-muted); font-size: 13px; margin-top: 2px;">Reduce time in direct sun between 10 AM and 4 PM. Use UV blocking sunglasses.</p>
+                    </div>
+                </div>
+
+                <div class="guide-item">
+                    <span class="guide-badge" style="background: #ef4444; color: #fff;">UV 8 - 10 (Very High)</span>
+                    <div>
+                        <strong style="color: var(--text-main); font-size: 14px;">Very High Risk</strong>
+                        <p style="color: var(--text-muted); font-size: 13px; margin-top: 2px;">Extra precautions needed. Unprotected skin can burn rapidly.</p>
+                    </div>
+                </div>
+
+                <div class="guide-item">
+                    <span class="guide-badge" style="background: #a855f7; color: #fff;">UV 11+ (Extreme)</span>
+                    <div>
+                        <strong style="color: var(--text-main); font-size: 14px;">Extreme Hazard</strong>
+                        <p style="color: var(--text-muted); font-size: 13px; margin-top: 2px;">Take all precautions. Avoid sun exposure during midday hours.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer class="app-footer glass-card">
+            <p>Live Weather Dashboard Analytics &copy; 2026 | Comprehensive Weather Metrics & Insights</p>
+        </footer>
+    </div>
+
+    <!-- Script for Multi-City Comparison -->
+    <script>
+        // Theme toggle logic
+        const themeBtn = document.getElementById('theme-toggle-btn');
+        const themeIcon = themeBtn.querySelector('i');
+        const savedTheme = localStorage.getItem('weather_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        if (savedTheme === 'light') {
+            themeIcon.className = 'fa-solid fa-sun light-icon';
+        }
+
+        themeBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('weather_theme', newTheme);
+            themeIcon.className = newTheme === 'light' ? 'fa-solid fa-sun light-icon' : 'fa-solid fa-moon dark-icon';
+        });
+
+        // Comparative Cities Data Fetcher
+        const cities = ['Mumbai', 'London', 'New York', 'Tokyo', 'Sydney', 'Paris', 'Dubai'];
+        const compareBody = document.getElementById('compare-table-body');
+
+        async function loadComparisonData() {
+            try {
+                const results = await Promise.allSettled(
+                    cities.map(city => fetch(`/api/weather?city=${encodeURIComponent(city)}`).then(r => r.json()))
+                );
+
+                compareBody.innerHTML = '';
+                results.forEach((res, index) => {
+                    if (res.status === 'fulfilled' && res.value.success) {
+                        const data = res.value;
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td><strong>${data.city}, ${data.country}</strong></td>
+                            <td style="font-weight: 700; color: var(--accent-blue);">${data.temp}°C</td>
+                            <td><img src="https://openweathermap.org/img/wn/${data.icon}.png" width="28" style="vertical-align: middle;"> ${data.condition}</td>
+                            <td>${data.humidity}%</td>
+                            <td>${data.wind_speed} m/s</td>
+                            <td>${data.pressure} hPa</td>
+                        `;
+                        compareBody.appendChild(row);
+                    } else {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td><strong>${cities[index]}</strong></td>
+                            <td colspan="5" style="color: var(--text-dim);">Data unavailable</td>
+                        `;
+                        compareBody.appendChild(row);
+                    }
+                });
+            } catch (err) {
+                compareBody.innerHTML = `<tr><td colspan="6" style="color:#ef4444; text-align:center;">Failed to load comparative data.</td></tr>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadComparisonData);
+    </script>
+</body>
+</html>
